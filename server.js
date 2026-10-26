@@ -74,18 +74,15 @@ app.post('/api/get-leave', async (req, res) => {
         // لا نفترض اسم عمود محدد؛ لأن leave_number غير موجود في المخطط الحالي.
         const { data, error } = await supabase
             .from('sick_leaves')
-            .select('*');
+            .select('*')
+            .eq('NormalizedServiceCode', leaveNumber)
+            .eq('PatientId', idNumber);
 
         if (error) {
             throw error;
         }
 
-        const rows = Array.isArray(data) ? data : [];
-        const matchingRows = rows.filter((item) => {
-            const rowLeaveNumber = firstValue(item, LEAVE_NUMBER_KEYS);
-            const rowIdNumber = firstValue(item, ID_NUMBER_KEYS);
-            return sameValue(rowLeaveNumber, leaveNumber) && sameValue(rowIdNumber, idNumber);
-        });
+        const matchingRows = Array.isArray(data) ? data : [];
 
         const formattedData = matchingRows.map((item) => ({
             PatientName: firstValue(item, [
